@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-const LS_KEY = "sensenova_api_key";
+// API Key 仅保存在内存中，关闭网页即销毁
 const LS_PWD_HASH = "sensenova_pwd_hash";
 const LS_SALT = "sensenova_salt";
 
@@ -427,10 +427,10 @@ function SplashScreen({ onFinish }: { onFinish: () => void }) {
 
         <div className="text-center space-y-1">
           <p className="text-[10px] text-muted-foreground">
-            本地运行 · 数据不上云 · 隐私密码保护
+            本地运行 · 数据不上云 · API Key 仅存内存 · 关闭即销毁
           </p>
           <p className="text-[10px] text-muted-foreground">
-            设备绑定 · 密码遗失无法找回
+            密码本地哈希存储 · 遗失无法找回
           </p>
         </div>
       </div>
@@ -470,7 +470,8 @@ function SetupScreen({ onDone }: { onDone: (key: string) => void }) {
     const salt = generateSalt();
     const hash = await doubleHash(trimmed, salt);
 
-    localStorage.setItem(LS_KEY, apiKey.trim());
+    // 仅保存密码哈希到 localStorage（用于锁屏验证）
+    // API Key 仅保存在内存中，关闭网页即销毁
     localStorage.setItem(LS_SALT, salt);
     localStorage.setItem(LS_PWD_HASH, hash);
 
@@ -548,7 +549,11 @@ function SetupScreen({ onDone }: { onDone: (key: string) => void }) {
               <div className="space-y-1 text-[11px] text-amber-700 dark:text-amber-500/90">
                 <p className="flex items-start gap-1.5">
                   <Smartphone className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  该密码将与当前设备绑定
+                  API Key 仅保存在内存中，关闭网页即销毁
+                </p>
+                <p className="flex items-start gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  本地密码用于锁屏保护，经二次哈希加密存储
                 </p>
                 <p className="flex items-start gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -560,7 +565,7 @@ function SetupScreen({ onDone }: { onDone: (key: string) => void }) {
                 </p>
                 <p className="flex items-start gap-1.5">
                   <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  密码经二次哈希加密，仅存于本地，不上传云端
+                  密码仅存于本地，不上传云端
                 </p>
               </div>
             </div>
@@ -609,7 +614,7 @@ function SetupScreen({ onDone }: { onDone: (key: string) => void }) {
 
         <div className="text-center space-y-1">
           <p className="text-[11px] text-muted-foreground">
-            密钥与密码均仅保存在本地浏览器，不会上传至服务器
+            API Key 仅保存在内存中，关闭网页即销毁 · 密码仅存于本地
           </p>
           <p className="text-[11px] text-muted-foreground">
             开源项目 · 额度由用户自行控制
@@ -623,12 +628,8 @@ function SetupScreen({ onDone }: { onDone: (key: string) => void }) {
 /* ===================== Main Chat App ===================== */
 
 export default function App() {
-  const [apiKey, setApiKey] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(LS_KEY);
-    }
-    return null;
-  });
+  // API Key 仅保存在内存中，关闭网页即销毁
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   const [showSplash, setShowSplash] = useState(true);
   const [locked, setLocked] = useState(false);
@@ -680,12 +681,12 @@ export default function App() {
   };
 
   const handleLogout = useCallback(() => {
-    if (!confirm("确定要退出吗？这会清除你的 API Key、本地密码和所有聊天记录，保护个人隐私。")) {
+    if (!confirm("确定要退出吗？这会清除本地密码和所有聊天记录，保护个人隐私。API Key 将随页面关闭而销毁。")) {
       return;
     }
-    localStorage.removeItem(LS_KEY);
     localStorage.removeItem(LS_PWD_HASH);
     localStorage.removeItem(LS_SALT);
+    setApiKey(null);
     window.location.reload();
   }, []);
 
@@ -883,7 +884,7 @@ export default function App() {
           </Button>
         </div>
         <p className="text-center text-[11px] text-muted-foreground mt-1.5">
-          Shift + Enter 换行 · 使用你自己的 API Key · 额度自己控制 · 开源项目 · 本地密码保护
+          Shift + Enter 换行 · API Key 仅存内存 · 关闭即销毁 · 本地密码保护
         </p>
         <a
           href="https://github.com/yuanfengjie466-star/smxdy"
